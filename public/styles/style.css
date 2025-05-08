@@ -1,0 +1,334 @@
+/* General styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    margin: 20px 0;
+    color: #333;
+}
+
+/* Controls styling */
+.controls {
+    margin: 20px auto;
+    text-align: center;
+}
+
+.controls select {
+    padding: 10px;
+    margin-right: 15px;
+    font-size: 16px;
+    min-width: 200px;
+}
+
+.controls button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.controls button:hover {
+    background-color: #45a049;
+}
+
+/* Chart container */
+.chart-container {
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+/* Temperature display */
+#temperatureDisplay {
+    text-align: center;
+    font-size: 18px;
+    margin: 20px 0;
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+/* Results interpretation section */
+.results-interpretation {
+    width: 90%;
+    margin: 30px auto;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Thermometer styling */
+.thermometer {
+    position: absolute;
+    right: 15px;
+    top: 30px;
+    height: 160px;
+    width: 30px;
+    z-index: 30;
+}
+
+.thermometer-bulb {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 30px;
+    background-color: #ff4d4d;
+    border: 3px solid #999;
+    border-radius: 50%;
+}
+
+.thermometer-stem {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 120px;
+    background-color: #ff4d4d;
+    border: 3px solid #999;
+    border-radius: 12px 12px 0 0;
+}
+
+.thermometer-reading {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    border: 1px solid #999;
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.results-interpretation h2 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.results-interpretation p {
+    margin: 10px 0;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: #444;
+}
+
+/* Results table styling */
+.results-table {
+    width: 90%;
+    margin: 20px auto;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+.results-table h2 {
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.results-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results-table th,
+.results-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.results-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    color: #333;
+    text-transform: uppercase;
+}
+
+.results-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.results-table tr:nth-child(odd) {
+    background-color: #fff;
+}
+
+.results-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.results-table td {
+    color: #555;
+}
+
+.results-table p {
+    margin-top: 10px;
+    font-size: 1rem;
+    text-align: justify;
+    color: #666;
+}
+
+/* Beaker positioning and animations */
+/* Beaker positioning and animations */
+.solution-beakers {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    height: 500px;
+}
+
+.beaker-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 450px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Reset beaker container positioning */
+.beaker-container {
+    position: absolute;
+    width: 180px;
+}
+
+/* Position the beakers in a triangle formation */
+.beaker-container.left {
+    top: 20px;
+    left: 160px;
+}
+
+.beaker-container.right {
+    top: 20px;
+    right: 160px;
+}
+
+.beaker-container.center {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Bigger beakers with label styling */
+.beaker {
+    border: 4px solid #999 !important;
+    border-bottom: 18px solid #999 !important;
+    width: 180px !important;
+    height: 220px !important;
+    position: relative !important;
+}
+
+/* Label styling - white rectangle with black text */
+.beaker-label {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background-color: white !important;
+    border: 1px solid #333 !important;
+    padding: 5px 10px !important;
+    border-radius: 4px !important;
+    font-weight: bold !important;
+    color: black !important;
+    font-size: 16px !important;
+    z-index: 20 !important;
+    min-width: 60% !important;
+    text-align: center !important;
+}
+
+/* Pour animations - adjusted for larger beakers */
+@keyframes pourLeftToMiddle {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(45deg) translateY(45px);
+    }
+    75% {
+        transform: rotate(45deg) translateY(45px);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes pourRightToMiddle {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-45deg) translateY(45px);
+    }
+    75% {
+        transform: rotate(-45deg) translateY(45px);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes fillBeaker {
+    0% {
+        background-color: transparent;
+    }
+    30% {
+        background-color: rgba(255, 204, 204, 0.6);
+    }
+    50% {
+        background-color: rgba(255, 204, 204, 0.6);
+    }
+    70% {
+        background-color: rgba(230, 230, 255, 0.8);
+    }
+    100% {
+        background-color: #c2c2ff;
+    }
+}
+
+/* Ensure animations work in all browsers */
+.pouring-animation .beaker-container.left {
+    animation: pourLeftToMiddle 2s forwards;
+    -webkit-animation: pourLeftToMiddle 2s forwards;
+    z-index: 10;
+}
+
+.pouring-animation .beaker-container.right {
+    animation: pourRightToMiddle 2s forwards 2.5s;
+    -webkit-animation: pourRightToMiddle 2s forwards 2.5s;
+    z-index: 10;
+}
+
+.pouring-animation .beaker-container.center .beaker {
+    animation: fillBeaker 5s forwards;
+    -webkit-animation: fillBeaker 5s forwards;
+}
+
+/* Additional styling for better visibility */
+h3 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: #333;
+}
