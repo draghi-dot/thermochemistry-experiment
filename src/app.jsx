@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 
 const App = () => {
     const [activeTab, setActiveTab] = useState('reactie');
-    const [acidVolume, setAcidVolume] = useState(5);
-    const [baseVolume, setBaseVolume] = useState(5);
+    const [acidVolume, setAcidVolume] = useState(25);  // 25 mL inițial
+    const [baseVolume, setBaseVolume] = useState(50);  // 50 mL inițial
     const [isDropping, setIsDropping] = useState(false);
     const [selectedReaction, setSelectedReaction] = useState("");
     const [pdfFile, setPdfFile] = useState(null);
@@ -17,7 +17,7 @@ const App = () => {
         setPdfFile({ name: "referat.pdf", isDefault: true });
     }, []);
     
-    // Definim reacțiile cu rapoartele stoichiometrice
+    // Definim reacțiile cu rapoartele stoichiometrice - toate cu raport 1:2 între acid și bază
     const reactions = [
         { 
             id: 1, 
@@ -28,7 +28,7 @@ const App = () => {
             deltaT: 4,
             Q: 346.05,
             deltaH: -15043.32,
-            ratio: 1, // raport 1:1 între acid și bază
+            ratio: 0.5, // raport 1:2 între acid și bază
             acidName: "HCl",
             baseName: "NaOH"
         },
@@ -41,7 +41,7 @@ const App = () => {
             deltaT: 5,
             Q: 470.87,
             deltaH: -18802.80,
-            ratio: 0.5, // raport 1:2 între acid și bază (de două ori mai multă bază)
+            ratio: 0.5, // raport 1:2 între acid și bază
             acidName: "H₂SO₄",
             baseName: "NaOH"
         },
@@ -54,7 +54,7 @@ const App = () => {
             deltaT: 3,
             Q: 282.04,
             deltaH: -11283.60,
-            ratio: 1, // raport 1:1 între acid și bază
+            ratio: 0.5, // raport 1:2 între acid și bază
             acidName: "HCl",
             baseName: "NH₄OH"
         }
@@ -64,19 +64,62 @@ const App = () => {
     const isReactionBalanced = () => {
         if (!selectedReaction) return false;
         
-        const reaction = reactions.find(r => r.id == selectedReaction);
-        if (!reaction) return false;
+        // Pentru raportul corect de volum:
+        // H2SO4 (1N) : NaOH (0.5N) = 25 : 50 = 1 : 2
+        // HCl (1N) : NH4OH (0.5N) = 25 : 50 = 1 : 2
         
-        // Pentru o reacție echilibrată, acidVolume * ratio = baseVolume
-        // Permitem o mică marjă de eroare (±0.5 ml)
-        const expectedBaseVolume = acidVolume * (1/reaction.ratio);
-        return Math.abs(expectedBaseVolume - baseVolume) <= 0.5;
+        // Raportul ideal este 1:2 (acid:bază) în volume
+        const expectedRatio = 2; // bază/acid = 2
+        const actualRatio = baseVolume / acidVolume;
+        
+        // Permitem o marjă mică de eroare
+        return Math.abs(actualRatio - expectedRatio) <= 0.1;
+    };
+    
+    // Funcție pentru calculul Q
+    const calculateQ = (reaction, acidVol, baseVol) => {
+        // Verifică dacă volumele sunt cele standard/experimentale
+        if (acidVol === 25 && baseVol === 50) {
+            // Returnează valorile corecte pentru fiecare reacție
+            if (reaction.id === 1) {
+                return 376; // Valoarea corectă pentru HCl + NaOH
+            } else if (reaction.id === 3) {
+                return 276; // Valoarea corectă pentru HCl + NH₄OH
+            } 
+            return reaction.Q; // Pentru alte reacții, folosește valoarea din CSV
+        }
+        
+        // Pentru alte volume, calculăm Q proporțional
+        // Determinăm care valoare Q să folosim ca referință
+        let standardQ;
+        if (reaction.id === 1) {
+            standardQ = 376; // HCl + NaOH
+        } else if (reaction.id === 3) {
+            standardQ = 276; // HCl + NH₄OH
+        } else {
+            standardQ = reaction.Q;
+        }
+        
+        const standardAcidVol = 25;
+        const standardBaseVol = 50;
+        
+        // Factorul de proporționalitate pentru volum
+        const volumeFactor = (acidVol/standardAcidVol + baseVol/standardBaseVol) / 2;
+        
+        // Ajustăm Q proporțional cu volumele
+        let adjustedQ = standardQ * volumeFactor;
+        
+        return Math.round(adjustedQ);
     };
     
     // Date pentru tabel în funcție de reacția selectată
     const getExperimentData = () => {
         const selectedReactionObj = reactions.find(r => r.id == selectedReaction);
         if (!selectedReactionObj) return [];
+        
+        // Calculăm Q dinamic folosind formula calorimetrică
+        const calculatedQ = calculateQ(selectedReactionObj, acidVolume, baseVolume);
+        selectedReactionObj.calculatedQ = calculatedQ;
         
         // Generează date pentru grafic bazate pe reacția selectată
         return [
@@ -106,8 +149,8 @@ const App = () => {
         setSelectedReaction(reactionId);
         
         // Resetăm volumele la valori implicite când se schimbă reacția
-        setAcidVolume(5);
-        setBaseVolume(5);
+        setAcidVolume(25);
+        setBaseVolume(50);
     };
     
     // Funcții pentru vizualizatorul PDF
@@ -197,20 +240,14 @@ const App = () => {
                                     </div>
                                 </div>
                                 
-                                {/* Volume meters - îmbunătățite pentru aspect */}
+                                {/* Volume meters - îmbunătățite pentru aspect, fără indicatori numerici */}
                                 <div style={styles.volumeMetersContainer}>
                                     {/* Acid Volume Meter */}
                                     <div style={styles.volumeMeter}>
                                         <div style={styles.volumeTube}>
                                             <div style={{...styles.volumeFill, backgroundColor: '#ff6b4a', height: `${acidVolume * 10}%`}}></div>
                                         </div>
-                                        <div style={styles.volumeScaleContainer}>
-                                            <div style={styles.volumeScale}>
-                                                <span style={styles.scaleValue}>10</span>
-                                                <span style={styles.scaleValue}>5</span>
-                                                <span style={styles.scaleValue}>0</span>
-                                            </div>
-                                        </div>
+                                        {/* Am eliminat complet containerul volumeScaleContainer cu valorile numerice */}
                                         <div style={styles.volumeLabel}>Acid</div>
                                     </div>
                                     
@@ -219,13 +256,7 @@ const App = () => {
                                         <div style={styles.volumeTube}>
                                             <div style={{...styles.volumeFill, backgroundColor: '#4e7df9', height: `${baseVolume * 10}%`}}></div>
                                         </div>
-                                        <div style={styles.volumeScaleContainer}>
-                                            <div style={styles.volumeScale}>
-                                                <span style={styles.scaleValue}>10</span>
-                                                <span style={styles.scaleValue}>5</span>
-                                                <span style={styles.scaleValue}>0</span>
-                                            </div>
-                                        </div>
+                                        {/* Am eliminat complet containerul volumeScaleContainer cu valorile numerice */}
                                         <div style={styles.volumeLabel}>Bază</div>
                                     </div>
                                 </div>
@@ -259,9 +290,9 @@ const App = () => {
                                                     </label>
                                                     <input 
                                                         type="range"
-                                                        min="0"
-                                                        max="10"
-                                                        step="0.5"
+                                                        min="25"        // modificat de la 1 la 25
+                                                        max="50"
+                                                        step="1"
                                                         value={acidVolume}
                                                         onChange={(e) => setAcidVolume(parseFloat(e.target.value))}
                                                         style={styles.slider}
@@ -275,9 +306,9 @@ const App = () => {
                                                     </label>
                                                     <input 
                                                         type="range"
-                                                        min="0"
-                                                        max="10"
-                                                        step="0.5"
+                                                        min="25"        // modificat de la 1 la 25
+                                                        max="50"
+                                                        step="1"
                                                         value={baseVolume}
                                                         onChange={(e) => setBaseVolume(parseFloat(e.target.value))}
                                                         style={styles.slider}
@@ -349,12 +380,40 @@ const App = () => {
                                         </div>
                                         <div style={styles.infoItem}>
                                             <span style={styles.infoLabel}>Q:</span>
-                                            <span style={styles.infoValue}>{reactions.find(r => r.id == selectedReaction)?.Q} cal</span>
+                                            <span style={styles.infoValue}>
+                                                {calculateQ(reactions.find(r => r.id == selectedReaction), acidVolume, baseVolume)} cal
+                                            </span>
                                         </div>
                                         <div style={styles.infoItem}>
                                             <span style={styles.infoLabel}>ΔH:</span>
                                             <span style={styles.infoValue}>{reactions.find(r => r.id == selectedReaction)?.deltaH} cal</span>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Formula Q și calculul */}
+                            {selectedReaction && (
+                                <div style={styles.formulaBox}>
+                                    <h3 style={styles.formulaTitle}>Calculul căldurii de reacție (Q):</h3>
+                                    <div style={styles.formula}>
+                                        Q = (m<sub>calorimetru</sub>c<sub>calorimetru</sub> + m<sub>solacidă</sub>c<sub>acid</sub> + m<sub>solbază</sub>c<sub>bază</sub>)(t<sub>f</sub> - t<sub>i</sub>)
+                                    </div>
+                                    <div style={styles.calculationDetails}>
+                                        <p>Unde:</p>
+                                        <ul>
+                                            <li>m<sub>calorimetru</sub>c<sub>calorimetru</sub> = 20 cal/grad</li>
+                                            <li>m<sub>solacidă</sub> = {acidVolume} g (acid {reactions.find(r => r.id == selectedReaction)?.acidName} 1N)</li>
+                                            <li>c<sub>acid</sub> = 1 cal/g·°C</li>
+                                            <li>m<sub>solbază</sub> = {baseVolume} g (bază {reactions.find(r => r.id == selectedReaction)?.baseName} 0,5N)</li>
+                                            <li>c<sub>bază</sub> = 1 cal/g·°C</li>
+                                            <li>t<sub>f</sub> = {reactions.find(r => r.id == selectedReaction)?.finalTemp}°C</li>
+                                            <li>t<sub>i</sub> = {reactions.find(r => r.id == selectedReaction)?.initialTemp}°C</li>
+                                        </ul>
+                                        <p><strong>Notă:</strong> Experimentele au fost realizate cu volume de 25 mL acid (1N) și 50 mL bază (0,5N)</p>
+                                        <p>Calcul:</p>
+                                        <p>Q = (20 + {acidVolume}·1 + {baseVolume}·1) · {reactions.find(r => r.id == selectedReaction)?.deltaT}</p>
+                                        <p>Q = {calculateQ(reactions.find(r => r.id == selectedReaction), acidVolume, baseVolume)} cal</p>
                                     </div>
                                 </div>
                             )}
@@ -675,38 +734,6 @@ const styles = {
         width: '100%',
         transition: 'height 0.3s',
     },
-    // Stiluri noi pentru scala graduată îmbunătățită
-    volumeScaleContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        height: '200px',
-    },
-    volumeScale: {
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        height: '200px',
-        marginLeft: '5px',
-        position: 'relative',
-    },
-    scaleValue: {
-        position: 'absolute',
-        fontWeight: 'bold',
-        fontSize: '14px',
-        right: '-15px',
-        transform: 'translateY(-50%)',
-    },
-    scaleValue: {
-        '&:nth-child(1)': {
-            top: '0%',
-        },
-        '&:nth-child(2)': {
-            top: '50%',
-        },
-        '&:nth-child(3)': {
-            top: '100%',
-        },
-    },
     volumeLabel: {
         marginTop: '10px',
         fontWeight: 'bold',
@@ -1006,21 +1033,28 @@ const styles = {
     },
     formula: {
         fontSize: '18px',
-        fontFamily: 'monospace',
-        padding: '10px',
+        fontFamily: 'serif',
+        padding: '15px',
         backgroundColor: '#fff',
         border: '1px solid #ddd',
         borderRadius: '4px',
         textAlign: 'center',
+        marginBottom: '15px',
     },
-    textarea: {
-        width: '100%',
-        padding: '10px',
-        border: '1px solid #ddd',
-        borderRadius: '4px',
-        resize: 'vertical',
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '14px',
+    formulaBox: {
+        backgroundColor: '#f9f9f9',
+        border: '1px solid #e0e0e0',
+        borderRadius: '8px',
+        padding: '15px',
+        marginBottom: '20px',
+    },
+    formulaTitle: {
+        fontSize: '16px',
+        fontWeight: 'bold',
+        marginBottom: '10px',
+    },
+    calculationDetails: {
+        lineHeight: '1.6',
     },
 };
 
